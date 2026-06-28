@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+pydantic-settings
+osmnx
+networkx
+scipy
+numpy
+scikit-learn
+httpx
+redis
+xgboost
+python-dotenv
+pyarrow

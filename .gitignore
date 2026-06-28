@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.env
+
+# Data / model weights (too large for git)
+backend/data/*.graphml
+backend/data/*.pkl
+backend/data/pems/raw/
+backend/data/pems/metadata/
+backend/data/pems/*.parquet
+backend/weights/*.pt
+backend/weights/*.json
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# OS
+.DS_Store
+.claude/*
