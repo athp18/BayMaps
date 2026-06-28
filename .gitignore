@@ -10,6 +10,7 @@ venv/
 backend/data/*.graphml
 backend/data/*.pkl
 backend/raw/*.gz
+backend/data/*.gz
 backend/data/pems/raw/
 backend/data/pems/metadata/
 backend/data/pems/*.parquet
