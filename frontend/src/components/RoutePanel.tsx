@@ -16,13 +16,30 @@ export function RoutePanel({ route, loading, error }: RoutePanelProps) {
       {error && <span style={styles.error}>{error}</span>}
 
       {route && (
-        <div style={styles.row}>
-          <Stat label="Distance" value={`${route.distance_km} km`} />
-          <Stat label="Duration" value={`${route.duration_minutes} min`} />
-          {route.traffic_adjusted && (
-            <span style={styles.badge}>Traffic-adjusted</span>
+        <>
+          <div style={styles.row}>
+            <Stat label="Distance" value={`${route.distance_km} km`} />
+            <Stat
+              label="Duration"
+              value={`${route.duration_minutes} min (${route.duration_min_minutes}–${route.duration_max_minutes} min)`}
+            />
+            {route.traffic_adjusted && (
+              <span style={styles.badge}>Traffic-adjusted</span>
+            )}
+          </div>
+          {route.directions && route.directions.length > 0 && (
+            <ol style={styles.directionsList}>
+              {route.directions.map((dir, idx) => (
+                <li key={idx} style={styles.directionItem}>
+                  <span style={styles.directionInstruction}>{dir.instruction}</span>
+                  <span style={styles.directionDist}>
+                    {(dir.distance_m / 1000).toFixed(2)} km
+                  </span>
+                </li>
+              ))}
+            </ol>
           )}
-        </div>
+        </>
       )}
     </div>
   )
@@ -60,5 +77,27 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: 12,
     fontSize: 12,
     fontWeight: 500,
+  },
+  directionsList: {
+    margin: '8px 0 0 0',
+    padding: '0 0 0 20px',
+    maxHeight: 200,
+    overflowY: 'auto',
+    borderTop: '1px solid #e5e7eb',
+    paddingTop: 8,
+  },
+  directionItem: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    padding: '3px 0',
+    gap: 12,
+  },
+  directionInstruction: {
+    color: '#374151',
+  },
+  directionDist: {
+    color: '#6b7280',
+    whiteSpace: 'nowrap',
+    flexShrink: 0,
   },
 }

@@ -2,6 +2,9 @@ import type { GeocodedPlace, RouteRequest, RouteResponse, TrafficResponse } from
 
 const BASE = '/api'
 
+const GEOCODE_TTL_MS = 5 * 60 * 1000
+const _geocodeCache = new Map<string, { result: GeocodedPlace | null; expires: number }>()
+
 export async function fetchRoute(req: RouteRequest): Promise<RouteResponse> {
   const resp = await fetch(`${BASE}/route`, {
     method: 'POST',
@@ -22,6 +25,10 @@ export async function fetchTraffic(): Promise<TrafficResponse> {
 }
 
 export async function geocode(query: string): Promise<GeocodedPlace | null> {
+  const key = query.trim().toLowerCase()
+  const cached = _geocodeCache.get(key)
+  if (cached && Date.now() < cached.expires) return cached.result
+
   const params = new URLSearchParams({
     q: query,
     format: 'json',
@@ -35,10 +42,9 @@ export async function geocode(query: string): Promise<GeocodedPlace | null> {
   })
   if (!resp.ok) return null
   const results = await resp.json()
-  if (!results.length) return null
-  return {
-    lat: parseFloat(results[0].lat),
-    lng: parseFloat(results[0].lon),
-    display_name: results[0].display_name,
-  }
+  const result = results.length
+    ? { lat: parseFloat(results[0].lat), lng: parseFloat(results[0].lon), display_name: results[0].display_name }
+    : null
+  _geocodeCache.set(key, { result, expires: Date.now() + GEOCODE_TTL_MS })
+  return result
 }

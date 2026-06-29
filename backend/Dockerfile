@@ -9,10 +9,6 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Torch CPU only (~800MB) — separate layer so it's cached across rebuilds
-RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
-RUN pip install --no-cache-dir torch-geometric
-
 COPY . .
 
 EXPOSE 8000

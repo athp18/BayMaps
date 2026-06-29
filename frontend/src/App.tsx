@@ -6,13 +6,13 @@ import { useTraffic } from './hooks/useTraffic'
 
 export default function App() {
   const { route, loading, error, originCoord, destCoord, findRoute } = useRoute()
-  const { traffic } = useTraffic()
+  useTraffic()
 
   return (
     <>
       <SearchBar onSearch={findRoute} loading={loading} />
       <RoutePanel route={route} loading={loading} error={error} />
-      <Map route={route} traffic={traffic} originCoord={originCoord} destCoord={destCoord} />
+      <Map route={route} originCoord={originCoord} destCoord={destCoord} />
     </>
   )
 }

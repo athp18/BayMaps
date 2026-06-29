@@ -13,12 +13,21 @@ class Coordinate(BaseModel):
     lng: float
 
 
+class Direction(BaseModel):
+    instruction: str
+    distance_m: float
+    street: str
+
+
 class RouteResponse(BaseModel):
     coordinates: list[Coordinate]
     distance_km: float
     duration_minutes: float
+    duration_min_minutes: float
+    duration_max_minutes: float
     traffic_adjusted: bool
     score: float
+    directions: list[Direction]
 
 
 class TrafficSegment(BaseModel):

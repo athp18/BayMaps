@@ -10,12 +10,21 @@ export interface RouteRequest {
   dest_lng: number
 }
 
+export interface Direction {
+  instruction: string
+  distance_m: number
+  street: string
+}
+
 export interface RouteResponse {
   coordinates: Coordinate[]
   distance_km: number
   duration_minutes: number
+  duration_min_minutes: number
+  duration_max_minutes: number
   traffic_adjusted: boolean
   score: number
+  directions: Direction[]
 }
 
 export interface TrafficSegment {
