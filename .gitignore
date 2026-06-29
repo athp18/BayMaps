@@ -14,6 +14,7 @@ backend/data/*.gz
 backend/data/*.txt
 backend/data/pems/raw/
 backend/data/pems/metadata/
+backend/data/*.pkl
 backend/data/pems/*.parquet
 backend/weights/*.pt
 backend/weights/*.json
