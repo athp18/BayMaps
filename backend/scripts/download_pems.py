@@ -21,8 +21,8 @@ BASE_URL = "https://pems.dot.ca.gov"
 CLEARINGHOUSE_URL = f"{BASE_URL}/"
 
 
-def scrape_download_ids(cookie: str, data_type: str = "station_5min", district: int = 4) -> list[tuple[str, str]]:
-    """Returns list of (download_id, filename) for all available files."""
+def scrape_download_ids(cookie, data_type, district):
+"""Returns list of (download_id, filename) for all available files."""
     params = {
         "dnode": "Clearinghouse",
         "type": data_type,
@@ -48,11 +48,11 @@ def scrape_download_ids(cookie: str, data_type: str = "station_5min", district: 
 
 
 def download_files(
-    cookie: str,
-    download_ids: list[tuple[str, str]],
-    out_dir: Path,
-    delay: float = 1.0,
-) -> None:
+    cookie,
+    download_ids,
+    out_dir,
+    delay,
+):
     out_dir.mkdir(parents=True, exist_ok=True)
     headers = {"Cookie": cookie, "User-Agent": "Mozilla/5.0"}
     total = len(download_ids)

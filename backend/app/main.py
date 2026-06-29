@@ -9,9 +9,9 @@ from app.api.routes import router
 from app.core.graph import get_graph, load_graph
 from app.core.speed_lookup import apply_speed_lookup, load_speed_lookup
 from app.etl.pipeline import start_etl_loop
-from app.models.inference import apply_gnn_weights
+from app.models.xgb_inference import load_models, load_sensor_data
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
 @asynccontextmanager
@@ -20,7 +20,8 @@ async def lifespan(app: FastAPI):
     G = get_graph()
     load_speed_lookup()
     apply_speed_lookup(G)
-    # apply_gnn_weights(G)  # uncomment after training GNN
+    load_models()
+    load_sensor_data(G)
     task = asyncio.create_task(start_etl_loop())
     yield
     task.cancel()

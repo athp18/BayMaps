@@ -6,7 +6,7 @@ from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-_graph: nx.MultiDiGraph | None = None
+_graph = None
 
 
 def get_graph():
@@ -37,6 +37,6 @@ async def load_graph():
     logger.info(f"Graph ready: {len(G.nodes)} nodes, {len(G.edges)} edges")
 
 
-def snap_to_node(lat: float, lng: float) -> int:
+def snap_to_node(lat, lng):
     # osmnx nearest_nodes takes (X=lng, Y=lat)
     return ox.nearest_nodes(get_graph(), lng, lat)

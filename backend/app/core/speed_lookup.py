@@ -9,11 +9,11 @@ logger = logging.getLogger(__name__)
 LOOKUP_PATH = Path("data/pems/speed_lookup.parquet")
 
 # hour_of_week (0-167) -> {(u, v): speed_kph}
-_hour_cache: dict[int, dict[tuple[int, int], float]] = {}
-_coverage: dict = {"covered_edges": 0, "total_edges": 0}
+_hour_cache = {}
+_coverage = {"covered_edges": 0, "total_edges": 0}
 
 
-def load_speed_lookup() -> None:
+def load_speed_lookup():
     if not LOOKUP_PATH.exists():
         logger.warning("speed_lookup.parquet not found — PEMS layer disabled")
         return
@@ -32,7 +32,7 @@ def load_speed_lookup() -> None:
     logger.info(f"Hour cache ready: {len(_hour_cache)} hours, ~{len(sample)} edges/hour")
 
 
-def get_overrides(hour_of_week: int | None = None) -> dict[tuple[int, int], float]:
+def get_overrides(hour_of_week=None):
     """Return {(u, v): speed_kph} for the given hour (defaults to current local time)."""
     if hour_of_week is None:
         now = datetime.now()
@@ -40,7 +40,7 @@ def get_overrides(hour_of_week: int | None = None) -> dict[tuple[int, int], floa
     return _hour_cache.get(hour_of_week, {})
 
 
-def apply_speed_lookup(G, hour_of_week: int | None = None) -> int:
+def apply_speed_lookup(G, hour_of_week=None):
     """Bake current-hour speeds into graph edge travel_time (startup baseline only)."""
     overrides = get_overrides(hour_of_week)
     if not overrides:
@@ -68,5 +68,5 @@ def apply_speed_lookup(G, hour_of_week: int | None = None) -> int:
     return updated
 
 
-def get_coverage() -> dict:
+def get_coverage():
     return _coverage

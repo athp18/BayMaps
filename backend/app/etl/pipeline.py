@@ -11,18 +11,18 @@ from app.schemas.route import TrafficResponse, TrafficSegment
 
 logger = logging.getLogger(__name__)
 
-_traffic_data: TrafficResponse = TrafficResponse(segments=[], updated_at="")
-_has_live_traffic: bool = False
+_traffic_data = TrafficResponse(segments=[], updated_at="")
+_has_live_traffic = False
 
 _SEVERITY_MULTIPLIER = {"Minor": 1.5, "Moderate": 2.0, "Major": 2.5}
 _SEVERITY_LEVEL = {"Minor": 1, "Moderate": 2, "Major": 3}
 
 
-def get_traffic_data() -> TrafficResponse:
+def get_traffic_data():
     return _traffic_data
 
 
-def has_live_traffic() -> bool:
+def has_live_traffic():
     return _has_live_traffic
 
 
@@ -66,7 +66,7 @@ async def run_etl():
     logger.info(f"ETL complete: {len(segments)} traffic segments")
 
 
-def _penalize_nearby_edges(G, lat: float, lng: float, multiplier: float) -> None:
+def _penalize_nearby_edges(G, lat, lng, multiplier):
     try:
         node = ox.nearest_nodes(G, lng, lat)
         for _, _, data in G.edges(node, data=True):

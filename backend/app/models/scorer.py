@@ -6,7 +6,6 @@ Falls back to a heuristic when no trained weights file is present.
 
 from pathlib import Path
 
-import networkx as nx
 import numpy as np
 
 try:
@@ -16,7 +15,7 @@ except ImportError:
     _XGBOOST_AVAILABLE = False
 
 
-def extract_route_features(G: nx.MultiDiGraph, path: list[int]) -> np.ndarray:
+def extract_route_features(G, path):
     if len(path) < 2:
         return np.zeros((1, 7), dtype=np.float32)
 
@@ -55,7 +54,7 @@ class RouteScorer:
             except Exception:
                 pass
 
-    def score(self, features: np.ndarray) -> float:
+    def score(self, features):
         if self._model is not None:
             return float(self._model.predict(features)[0])
 

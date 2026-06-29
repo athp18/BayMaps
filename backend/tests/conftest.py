@@ -3,7 +3,7 @@ import pytest
 
 
 @pytest.fixture
-def small_graph() -> nx.MultiDiGraph:
+def small_graph():
     """
     4-node directed graph representing a tiny road network:
         0 → 1 (length=100, travel_time=10)

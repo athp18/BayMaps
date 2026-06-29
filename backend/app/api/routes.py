@@ -4,6 +4,7 @@ from app.core.dijkstra import dijkstra
 from app.core.graph import get_graph, snap_to_node
 from app.core.speed_lookup import get_coverage, get_overrides
 from app.etl.pipeline import get_traffic_data
+from app.models.xgb_inference import get_multipliers
 from app.models.inference import predict_route
 from app.schemas.route import Coordinate, RouteRequest, RouteResponse, TrafficResponse
 
@@ -27,7 +28,9 @@ async def get_route(req: RouteRequest):
         raise HTTPException(status_code=400, detail=f"Could not snap coordinates to road graph: {e}")
 
     try:
-        path, cost = dijkstra(G, origin_node, dest_node, overrides=get_overrides())
+        pems = get_overrides()
+        xgb = get_multipliers(G)
+        path, cost = dijkstra(G, origin_node, dest_node, pems_overrides=pems, gnn_multipliers=xgb)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 

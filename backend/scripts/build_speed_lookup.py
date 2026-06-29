@@ -45,7 +45,7 @@ def build_station_node_map(G):
     return nodes_gdf
 
 
-def read_pems_file(path: Path) -> pd.DataFrame:
+def read_pems_file(path):
     try:
         compression = "gzip" if str(path).endswith(".gz") else "infer"
         df = pd.read_csv(
@@ -146,7 +146,7 @@ def build_speed_lookup():
     nearest_nodes = ox.distance.nearest_nodes(G, lons, lats)
     merged["node"] = nearest_nodes
 
-    node_to_edges: dict[int, list[tuple[int, int]]] = {}
+    node_to_edges = {}
     for u, v in G.edges():
         node_to_edges.setdefault(u, []).append((u, v))
 

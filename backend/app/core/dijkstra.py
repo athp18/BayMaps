@@ -1,7 +1,9 @@
 import heapq
 
 
-def _dijkstra(G, source, target, weight="travel_time", overrides: dict | None = None):
+def _dijkstra(G, source, target, weight="travel_time",
+              pems_overrides=None,
+              gnn_multipliers=None):
     dist = {source: 0.0}
     prev = {source: None}
     heap = [(0.0, source)]
@@ -21,11 +23,18 @@ def _dijkstra(G, source, target, weight="travel_time", overrides: dict | None = 
             if v in visited:
                 continue
 
-            if overrides and (u, v) in overrides:
-                length_m = data.get("length", 100.0)
-                w = length_m / (overrides[(u, v)] / 3.6)
+            length_m = data.get("length", 100.0)
+
+            if pems_overrides and (u, v) in pems_overrides:
+                # Real sensor speed — most accurate
+                w = length_m / (pems_overrides[(u, v)] / 3.6)
             else:
-                w = data.get(weight) or data.get("length", 1.0)
+                base_tt = data.get(weight) or (length_m / max(data.get("speed_kph", 50) / 3.6, 1))
+                if gnn_multipliers and (u, v) in gnn_multipliers:
+                    # GNN-predicted congestion on uncovered edges
+                    w = base_tt * gnn_multipliers[(u, v)]
+                else:
+                    w = base_tt
 
             new_cost = cost + w
             if new_cost < dist.get(v, float("inf")):
@@ -39,8 +48,10 @@ def _dijkstra(G, source, target, weight="travel_time", overrides: dict | None = 
     return dist, prev
 
 
-def dijkstra(G, source, target, weight="travel_time", overrides: dict | None = None):
-    dist, prev = _dijkstra(G, source, target, weight, overrides)
+def dijkstra(G, source, target, weight="travel_time",
+             pems_overrides=None,
+             gnn_multipliers=None):
+    dist, prev = _dijkstra(G, source, target, weight, pems_overrides, gnn_multipliers)
 
     path = []
     node = target
