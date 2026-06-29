@@ -1,7 +1,7 @@
 import { FormEvent, useState, useEffect, useRef, useCallback } from 'react'
 
 const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search'
-const VIEWBOX = '-122.6,37.2,-121.5,38.1'
+const VIEWBOX = '-123.0,37.0,-121.0,38.4'
 
 interface NominatimResult {
   display_name: string
@@ -35,7 +35,7 @@ function useSuggestions(query: string) {
           format: 'json',
           limit: '5',
           viewbox: VIEWBOX,
-          bounded: '0',
+          bounded: '1',
           'accept-language': 'en',
         })
         const res = await fetch(`${NOMINATIM_URL}?${params}`, {

@@ -34,7 +34,7 @@ export async function geocode(query: string): Promise<GeocodedPlace | null> {
     format: 'json',
     limit: '1',
     // Bias toward Bay Area bounding box
-    viewbox: '-122.9,37.2,-121.5,38.1',
+    viewbox: '-123.0,37.0,-121.0,38.4',
     bounded: '1',
   })
   const resp = await fetch(`https://nominatim.openstreetmap.org/search?${params}`, {

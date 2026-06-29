@@ -1,6 +1,6 @@
-# Bay Area Pathfinder
+# BayMaps
 
-A traffic-aware routing app for the San Francisco Bay Area. Routes are computed over an OSMnx road graph using a custom Dijkstra implementation, with travel times adjusted using real Caltrans PEMS sensor data and an XGBoost congestion model.
+A traffic-aware routing app for the San Francisco Bay Area, inspired by Google and Apple Maps. Routes are computed over an OSMnx road graph using a custom Dijkstra implementation, with travel times adjusted using real Caltrans PEMS sensor data and an XGBoost congestion model.
 
 ## How it works
 
@@ -14,17 +14,26 @@ For edges without direct sensor coverage, an XGBoost model predicts a congestion
 
 **Routing**
 
-Custom Dijkstra runs over the graph at request time. Priority: live PEMS speed (sensor-covered edges) over XGBoost multiplier (uncovered edges) over OSM default travel time.
+Custom Dijkstra runs over the graph at request time. Priority: live PEMS speed (sensor-covered edges) over XGBoost multiplier (uncovered edges) over OSM default travel time. Results are cached in Redis by (origin, destination, hour-of-week) with a 5-minute TTL.
+
+**Turn-by-turn directions**
+
+Consecutive edges on the same named street are merged into a single step. Bearing math between segments produces left/right/slight/sharp turn instructions. Each step includes street name and distance.
+
+**ETA confidence**
+
+Duration is shown as a point estimate with a confidence range, e.g. "26 min (22-31 min)". Bounds are derived from per-bucket model R2: tighter for well-predicted buckets (weekend day, PM peak) and wider for noisier ones (night).
 
 **Frontend**
 
-React + TypeScript + Leaflet. Click to set origin and destination, see the route drawn on the map with distance, duration, and a traffic-adjustment flag.
+React + TypeScript + Leaflet. Type an origin and destination with Bay Area autocomplete suggestions, see the route drawn on the map with distance, duration range, and a scrollable turn-by-turn directions list.
 
 ## Stack
 
 | Layer | Tech |
 |---|---|
 | Backend | FastAPI, OSMnx, NetworkX, XGBoost, SciPy |
+| Cache | Redis |
 | Frontend | React 18, TypeScript, Vite, Leaflet |
 | Data | Caltrans PeMS D4, OpenStreetMap |
 | Infrastructure | Docker Compose |
@@ -35,8 +44,8 @@ React + TypeScript + Leaflet. Click to set origin and destination, see the route
 backend/
   app/
     api/        # FastAPI routes
-    core/       # Dijkstra, graph loading, PEMS speed lookup
-    etl/        # Live traffic ETL loop
+    core/       # Dijkstra, graph loading, PEMS speed lookup, turn-by-turn directions
+    etl/        # Live traffic ETL loop (511.org)
     models/     # XGBoost inference, route scorer
     schemas/    # Pydantic request/response models
   scripts/
@@ -48,9 +57,9 @@ backend/
   data/                     # bay_area.graphml, speed_lookup.parquet (not committed)
 frontend/
   src/
-    components/  # Map, SearchBar, RoutePanel
+    components/  # Map, SearchBar (with autocomplete), RoutePanel (directions + ETA range)
     hooks/       # useRoute, useTraffic
-    services/    # API client
+    services/    # API client with geocode TTL cache
 ```
 
 ## Setup
@@ -64,19 +73,18 @@ frontend/
 ### 1. Build the road graph
 
 ```bash
-cd backend
 docker compose run --rm --no-deps backend python -m scripts.download_graph
 ```
 
-This downloads the Bay Area OSMnx graph and saves it to `backend/data/bay_area.graphml`.
+Saves the Bay Area OSMnx graph to `backend/data/bay_area.graphml`.
 
 ### 2. Download PeMS data
 
 ```bash
-python -m scripts.download_pems
+cd backend && python -m scripts.download_pems
 ```
 
-Downloads District 4 5-minute station files into `backend/data/`. You need at least a few weeks of data for stable speed estimates. The script requires your PeMS credentials in `.env`.
+Downloads District 4 5-minute station files into `backend/data/`. A few weeks of data is enough for stable speed estimates. Requires PeMS credentials in `.env`.
 
 ### 3. Build the speed lookup
 
@@ -89,12 +97,11 @@ Produces `backend/data/pems/speed_lookup.parquet`.
 ### 4. Build training data and train XGBoost
 
 ```bash
-# Build features (needs the graph, so run in Docker)
+# Build features (run in Docker so the graph loads correctly)
 docker compose run --rm --no-deps backend python -m scripts.build_training_data
 
-# Train models (run locally)
-cd backend
-python -m scripts.train_xgb
+# Train models locally
+cd backend && python -m scripts.train_xgb
 ```
 
 Saves six model files to `backend/weights/`.
@@ -105,7 +112,7 @@ Saves six model files to `backend/weights/`.
 docker compose up --build
 ```
 
-Frontend: `http://localhost:5173`
+Frontend: `http://localhost:3000`
 API: `http://localhost:8000/api/health`
 
 ## API
@@ -122,6 +129,8 @@ POST /api/route
 GET /api/health
 GET /api/traffic
 ```
+
+Route response includes coordinates, distance, duration with confidence range, traffic-adjusted flag, and a list of turn-by-turn direction steps.
 
 ## Environment variables
 

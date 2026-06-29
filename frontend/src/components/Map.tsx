@@ -23,6 +23,10 @@ export function Map({ route, originCoord, destCoord }: MapProps) {
     <MapContainer
       center={[37.7749, -122.4194]}
       zoom={11}
+      minZoom={9}
+      maxZoom={18}
+      maxBounds={[[36.9, -123.0], [38.4, -121.0]]}
+      maxBoundsViscosity={1.0}
       style={{ flex: 1, width: '100%' }}
     >
       <TileLayer

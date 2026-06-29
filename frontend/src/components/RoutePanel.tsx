@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { RouteResponse } from '../types'
 
 interface RoutePanelProps {
@@ -7,7 +8,17 @@ interface RoutePanelProps {
 }
 
 export function RoutePanel({ route, loading, error }: RoutePanelProps) {
+  const [useMiles, setUseMiles] = useState(true)
+
   if (!loading && !error && !route) return null
+
+  function formatDist(km: number) {
+    return useMiles ? `${(km * 0.621371).toFixed(1)} mi` : `${km.toFixed(1)} km`
+  }
+
+  function formatStepDist(m: number) {
+    return useMiles ? `${(m * 0.000621371).toFixed(2)} mi` : `${(m / 1000).toFixed(2)} km`
+  }
 
   return (
     <div style={styles.panel}>
@@ -18,7 +29,7 @@ export function RoutePanel({ route, loading, error }: RoutePanelProps) {
       {route && (
         <>
           <div style={styles.row}>
-            <Stat label="Distance" value={`${route.distance_km} km`} />
+            <Stat label="Distance" value={formatDist(route.distance_km)} />
             <Stat
               label="Duration"
               value={`${route.duration_minutes} min (${route.duration_min_minutes}–${route.duration_max_minutes} min)`}
@@ -26,15 +37,16 @@ export function RoutePanel({ route, loading, error }: RoutePanelProps) {
             {route.traffic_adjusted && (
               <span style={styles.badge}>Traffic-adjusted</span>
             )}
+            <button style={styles.toggle} onClick={() => setUseMiles(m => !m)}>
+              {useMiles ? 'km' : 'mi'}
+            </button>
           </div>
           {route.directions && route.directions.length > 0 && (
             <ol style={styles.directionsList}>
               {route.directions.map((dir, idx) => (
                 <li key={idx} style={styles.directionItem}>
                   <span style={styles.directionInstruction}>{dir.instruction}</span>
-                  <span style={styles.directionDist}>
-                    {(dir.distance_m / 1000).toFixed(2)} km
-                  </span>
+                  <span style={styles.directionDist}>{formatStepDist(dir.distance_m)}</span>
                 </li>
               ))}
             </ol>
@@ -91,6 +103,16 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: 'space-between',
     padding: '3px 0',
     gap: 12,
+  },
+  toggle: {
+    marginLeft: 'auto',
+    padding: '2px 10px',
+    fontSize: 12,
+    border: '1px solid #d1d5db',
+    borderRadius: 12,
+    background: '#fff',
+    color: '#374151',
+    cursor: 'pointer',
   },
   directionInstruction: {
     color: '#374151',
